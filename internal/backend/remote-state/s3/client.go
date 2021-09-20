@@ -88,7 +88,7 @@ func (c *RemoteClient) Get() (payload *remote.Payload, err error) {
 				continue
 			}
 
-			return nil, fmt.Errorf(errBadChecksumFmt, digest)
+			return nil, fmt.Errorf(errBadChecksumFmt, c.bucketName, c.path, expected, digest, digest)
 		}
 
 		break
@@ -405,8 +405,12 @@ func (c *RemoteClient) getSSECustomerKeyMD5() string {
 
 const errBadChecksumFmt = `state data in S3 does not have the expected content.
 
+I tried to get the state data in bucket: %s at path: %s, but its MD5 checksum
+didn't line up with what I have stored in DynamoDB.
+I expected to find a checksum of %x, but found %x.
+
 This may be caused by unusually long delays in S3 processing a previous state
-update.  Please wait for a minute or two and try again. If this problem
+update. Please wait for a minute or two and try again. If this problem
 persists, and neither S3 nor DynamoDB are experiencing an outage, you may need
 to manually verify the remote state and update the Digest value stored in the
 DynamoDB table to the following value: %x
